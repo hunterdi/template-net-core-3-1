@@ -12,7 +12,7 @@ using System.Threading.Tasks;
 namespace Architecture
 {
     public abstract class RepositoryBase<TDomain, TContext> : IRepositoryBase<TDomain>
-        where TDomain : BaseDomain where TContext : DbContext
+        where TDomain : BaseDomain where TContext : DbContext, IDisposable
     {
         protected readonly TContext _dbContext;
         protected readonly DbSet<TDomain> _entitySet;
@@ -190,6 +190,13 @@ namespace Architecture
         {
             this._entitySet.Remove(domain).State = EntityState.Deleted;
             return Task.CompletedTask;
+        }
+
+        public virtual void Delete(Func<TDomain, bool> predicate)
+        {
+            this._entitySet
+                .Where(predicate).ToList()
+                .ForEach(del => this._dbContext.Set<TDomain>().Remove(del));
         }
 
         public virtual async Task<TDomain> DeleteByIdAsync(Guid id)

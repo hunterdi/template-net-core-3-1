@@ -15,13 +15,14 @@ namespace Architecture
         {
             var serviceProvider = services
                 .AddEntityFrameworkSqlServer()
+                //.AddEntityFrameworkNpgsql()
                 //.AddEntityFrameworkInMemoryDatabase()
                 .BuildServiceProvider();
 
             services.AddDbContextPool<ApplicationDataContext>(option =>
             {
                 //option.UseInMemoryDatabase(configuration.GetConnectionString("InMemory"));
-                option.UseNpgsql(configuration.GetConnectionString("Postgres"), build =>
+                option.UseSqlServer(configuration.GetConnectionString("SqlServer"), build =>
                 {
                     build.EnableRetryOnFailure(5, TimeSpan.FromSeconds(10), null);
                     build.MigrationsAssembly("RestApi");
@@ -30,7 +31,7 @@ namespace Architecture
                 option.UseInternalServiceProvider(serviceProvider);
             }, 20);
 
-            //services.AddScoped<DbContext, ApplicationDataContext>();
+            services.AddScoped<DbContext, ApplicationDataContext>();
 
             return services;
         }

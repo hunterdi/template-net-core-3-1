@@ -27,5 +27,11 @@ namespace Architecture
 
 		[JsonExtensionData]
 		public IDictionary<string, object> Extensions { get; } = new Dictionary<string, object>(StringComparer.Ordinal);
-	}
+
+		[JsonProperty(NullValueHandling = NullValueHandling.Ignore, PropertyName = "innerException")]
+		public string  InnerException { get; set; }
+
+		[JsonProperty(NullValueHandling = NullValueHandling.Ignore, PropertyName = "stackTrace")]
+		public string StackTrace { get; set; }
+    }
 }

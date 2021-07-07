@@ -15,10 +15,6 @@ namespace Business
             var configMapper = new MapperConfiguration(configuration =>
             {
                 configuration.AddProfile<AuthenticationMapper>();
-                configuration.AddProfile<TagMapper>();
-                configuration.AddProfile<TaskMapper>();
-                configuration.AddProfile<TaskListMapper>();
-                configuration.AddProfile<TagTaskMapper>();
             });
 
             services.AddSingleton(configMapper.CreateMapper());

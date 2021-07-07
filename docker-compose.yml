@@ -5,8 +5,8 @@ services:
         image: postgres:alpine
         restart: unless-stopped
         environment:
-            POSTGRES_USER: postgres
-            POSTGRES_PASSWORD: postgres
+            POSTGRES_USER: admin
+            POSTGRES_PASSWORD: '#S0n1@66'
             POSTGRES_DB: restapi
         container_name: postgresdb
         volumes:
@@ -16,14 +16,14 @@ services:
         ports:
             - "5432:5432"
         networks:
-            - restapi-postgres-pgadmin-redis-network
+            - restapi-postgres-pgadmin-redis-mssql-network
 
     pgadmin:
         image: dpage/pgadmin4
         restart: unless-stopped
         environment:
-            PGADMIN_DEFAULT_EMAIL: restapi@admin.com
-            PGADMIN_DEFAULT_PASSWORD: restapi
+            PGADMIN_DEFAULT_EMAIL: jurandiraraujo85@gmail.com
+            PGADMIN_DEFAULT_PASSWORD: '#S0n1@66'
             PGADMIN_LISTEN_PORT: 443
         container_name: pgadmin4
         ports:
@@ -31,7 +31,7 @@ services:
         depends_on:
             - postgresdb
         networks:
-            - restapi-postgres-pgadmin-redis-network
+            - restapi-postgres-pgadmin-redis-mssql-network
 
     redis:
         image: redis
@@ -39,9 +39,9 @@ services:
         ports:
             - '6379:6379'
         container_name: 'redis'
-        command: 'redis-server --requirepass redis2020'
+        command: 'redis-server --requirepass #S0n1@66'
         networks:
-            - restapi-postgres-pgadmin-redis-network
+            - restapi-postgres-pgadmin-redis-mssql-network
 
     elasticsearch:
         container_name: elasticsearch
@@ -74,6 +74,7 @@ services:
 
     zookeeper:
         image: confluentinc/cp-zookeeper:latest
+        container_name: zookeeper
         restart: unless-stopped
         networks: 
             - broker-kafka
@@ -83,6 +84,7 @@ services:
 
     kafka:
         image: confluentinc/cp-kafka:latest
+        container_name: kafka
         restart: unless-stopped
         networks: 
             - broker-kafka
@@ -100,6 +102,7 @@ services:
 
     kafdrop:
         image: obsidiandynamics/kafdrop:latest
+        container_name: kafdrop
         restart: unless-stopped
         networks: 
             - broker-kafka
@@ -110,8 +113,23 @@ services:
         environment:
             KAFKA_BROKERCONNECT: kafka:29092
 
+    sql-server:
+        image: mcr.microsoft.com/mssql/server:2019-CU10-ubuntu-20.04
+        container_name: sql-server-ubuntu-2004
+        restart: unless-stopped
+        environment:
+          - ACCEPT_EULA=Y
+          - MSSQL_SA_PASSWORD=#S0n1@66
+          - MSSQL_TCP_PORT=1433
+        volumes:
+            - mssqldata:/var/opt/mssql
+        ports:
+          - "1433:1433"
+        networks:
+          - restapi-postgres-pgadmin-redis-mssql-network
+
 networks:
-    restapi-postgres-pgadmin-redis-network:
+    restapi-postgres-pgadmin-redis-mssql-network:
         driver: bridge
     elastic:
         driver: bridge
@@ -124,6 +142,8 @@ volumes:
     pgconf:
         driver: local
     pglog:
+        driver: local
+    mssqldata:
         driver: local
     elasticsearch-data:
         driver: local

@@ -18,9 +18,9 @@ namespace Architecture
         protected readonly IServiceBase<TDomain> _service;
         protected readonly IMapper _mapper;
 
-        public BaseController(IServiceBase<TDomain> serviceCrud, IMapper mapper)
+        public BaseController(IServiceBase<TDomain> service, IMapper mapper)
         {
-            this._service = serviceCrud;
+            this._service = service;
             this._mapper = mapper;
         }
 

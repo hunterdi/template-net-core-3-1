@@ -12,7 +12,7 @@ namespace Architecture
     public abstract class BaseControllerCrud<TDomain, TDTO, TInsertDTO, TUpdateDTO> : BaseController<TDomain, TDTO>
         where TDomain : BaseDomain where TDTO : class where TInsertDTO : class where TUpdateDTO : class
     {
-        public BaseControllerCrud(IServiceBase<TDomain> serviceCrud, IMapper mapper) : base(serviceCrud, mapper)
+        public BaseControllerCrud(IServiceBase<TDomain> service, IMapper mapper) : base(service, mapper)
         {
         }
 

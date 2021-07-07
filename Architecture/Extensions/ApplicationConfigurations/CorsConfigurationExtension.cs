@@ -7,33 +7,49 @@ using System.Text;
 
 namespace Architecture
 {
-	public static class CorsConfigurationExtension
-	{
-		private static string _corsPolicy = "RestApi";
-
-		public static IServiceCollection AddCorsConfiguration(this IServiceCollection services)
-		{
-			services.AddCors(options =>
-			{
-				options.AddPolicy(_corsPolicy, builderPolicy =>
-				{
-					builderPolicy
-					.SetIsOriginAllowed(origin => true)
-					.AllowAnyMethod()
-					.AllowAnyHeader()
-					.AllowCredentials();
-				});
-			});
-
-			return services;
-		}
-
-
-		public static IApplicationBuilder UseCorsConfiguration(this IApplicationBuilder app)
+    public static class CorsConfigurationExtension
+    {
+        public static IServiceCollection AddCorsConfiguration(this IServiceCollection services)
         {
-			app.UseCors(_corsPolicy);
-			
-			return app;
+            services.AddCors(options =>
+            {
+                options.AddDefaultPolicy(builderPolicy =>
+                {
+                    builderPolicy
+                    .AllowAnyMethod()
+                    .AllowAnyHeader()
+                    .AllowCredentials()
+                    .SetIsOriginAllowed(origin => true) // allow any origin
+                    .SetPreflightMaxAge(TimeSpan.FromSeconds(5000));
+                });
+
+                options.AddPolicy("RestApi", builderPolicy =>
+                {
+                    builderPolicy
+                    .AllowAnyMethod()
+                    .AllowAnyHeader()
+                    .AllowCredentials()
+                    .SetIsOriginAllowed(origin => true) // allow any origin
+                    .SetPreflightMaxAge(TimeSpan.FromSeconds(5000));
+                });
+            });
+
+            return services;
         }
-	}
+
+
+        public static IApplicationBuilder UseCorsConfiguration(this IApplicationBuilder app)
+        {
+            app.UseCors(builder => builder
+                .AllowAnyMethod()
+                .AllowAnyHeader()
+                .AllowCredentials()
+                .SetIsOriginAllowed(origin => true) // allow any origin
+                .SetPreflightMaxAge(TimeSpan.FromSeconds(5000)));
+
+            app.UseCors("RestApi");
+
+            return app;
+        }
+    }
 }

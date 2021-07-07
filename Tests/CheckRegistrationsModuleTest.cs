@@ -19,9 +19,6 @@ namespace Tests
             {
                 typeof (ILifetimeScope),
                 typeof (IComponentContext),
-                typeof (ITaskListService),
-                typeof (ITagService),
-                typeof (ITaskService)
             };
 
             var typesRegistered = this.GetTypesRegisteredInModule(new ServicesModule());

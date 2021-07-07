@@ -11,7 +11,7 @@ namespace Architecture
     public abstract class BaseControllerInsertOrUpdate<TDomain, TDTO, TInsertOrUpdateDTO> : BaseController<TDomain, TDTO>
         where TDomain: BaseDomain where TDTO: class where TInsertOrUpdateDTO: class
     {
-        public BaseControllerInsertOrUpdate(IServiceBase<TDomain> serviceCrud, IMapper mapper) : base(serviceCrud, mapper)
+        public BaseControllerInsertOrUpdate(IServiceBase<TDomain> service, IMapper mapper) : base(service, mapper)
         {
         }
 

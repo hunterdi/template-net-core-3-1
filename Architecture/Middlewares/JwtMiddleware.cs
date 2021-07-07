@@ -35,7 +35,7 @@ namespace Architecture
             }
             else
             {
-                await this._next(context);
+                await _next.Invoke(context);
             }
 
         }

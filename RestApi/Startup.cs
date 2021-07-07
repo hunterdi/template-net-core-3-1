@@ -7,11 +7,14 @@ using GraphQL;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Http.Features;
 using Microsoft.AspNetCore.HttpOverrides;
 using Microsoft.AspNetCore.Localization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc.Cors;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.FileProviders;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
@@ -23,8 +26,12 @@ using Seed;
 using Serilog;
 using Serilog.Extensions.Logging;
 using Services;
+using System;
 using System.Collections.Generic;
 using System.Globalization;
+using System.IO;
+using System.Linq;
+using System.Net;
 
 namespace RestApi
 {
@@ -50,24 +57,37 @@ namespace RestApi
             services.Configure<JWTSettings>(Configuration.GetSection("JWTSettings"));
             services.Configure<ConnectionStrings>(Configuration.GetSection("ConnectionStrings"));
 
+            services.Configure<ApiBehaviorOptions>(options =>
+            {
+                options.SuppressModelStateInvalidFilter = true;
+            });
+
             services.AddCorsConfiguration();
+
             services.AddControllers(options =>
             {
-                //options.Filters.Add(typeof(ValidateModelStateFilter));
+                options.Filters.Add(typeof(ValidateModelStateFilter));
             })
-                .AddNewtonsoftJson(options =>
-                {
-                    options.SerializerSettings.ReferenceLoopHandling = ReferenceLoopHandling.Ignore;
-                    options.SerializerSettings.NullValueHandling = NullValueHandling.Include;
-                    options.SerializerSettings.Formatting = Formatting.Indented;
-                    options.SerializerSettings.Converters.Add(new StringEnumConverter(new CamelCaseNamingStrategy()));
-                    options.SerializerSettings.Converters.Add(new MemoryStreamJsonConverter());
-                })
-                .AddFluentValidation(v => v.RegisterValidatorsFromAssemblyContaining<IBaseValidator>())
-                .AddControllersAsServices()
-                .SetCompatibilityVersion(CompatibilityVersion.Version_3_0);
+            .AddNewtonsoftJson(options =>
+            {
+                options.SerializerSettings.ReferenceLoopHandling = ReferenceLoopHandling.Ignore;
+                options.SerializerSettings.NullValueHandling = NullValueHandling.Include;
+                options.SerializerSettings.Formatting = Formatting.Indented;
+                options.SerializerSettings.Converters.Add(new StringEnumConverter(new CamelCaseNamingStrategy()));
+                options.SerializerSettings.Converters.Add(new MemoryStreamJsonConverter());
+            })
+            .AddFluentValidation(v => v.RegisterValidatorsFromAssemblyContaining<IBaseValidator>())
+            .AddControllersAsServices()
+            .SetCompatibilityVersion(CompatibilityVersion.Version_3_0);
 
-            services.AddErrorHandler();
+            services.Configure<FormOptions>(options =>
+            {
+                options.MemoryBufferThreshold = Int32.MaxValue;
+                options.ValueLengthLimit = Int32.MaxValue;
+                options.MultipartBodyLengthLimit = Int32.MaxValue;
+            });
+
+            services.AddMiddlewareConfigurations();
             services.AddDbContextConfiguration(Configuration);
             services.AddMapperConfiguration();
             //services.AddRedisConfiguration(Configuration);
@@ -100,19 +120,25 @@ namespace RestApi
             app.UseSerilogRequestLogging();
             app.UseSwaggerConfiguration();
 
-            app.UseHttpsRedirection();
             app.UseStaticFiles();
-
-            app.UseRouting();
+            app.UseStaticFiles(new StaticFileOptions()
+            {
+                FileProvider = new PhysicalFileProvider(Path.Combine(Directory.GetCurrentDirectory(), @"StaticFiles")),
+                RequestPath = new PathString("/StaticFiles")
+            });
             app.UseWebSockets();
+            app.UseRouting();
             app.UseCorsConfiguration();
-            
+            //app.UseHttpsRedirection();
+
+            app.UseAuthorization();
+
             //app.UseGraphQLConfiguration(env);
             //app.UseHealthChecksConfiguration();
-            
+
             app.UseEndpoints(endpoints =>
             {
-                endpoints.MapHealthChecksUI();
+                //endpoints.MapHealthChecksUI();
                 endpoints.MapControllers();
             });
         }
